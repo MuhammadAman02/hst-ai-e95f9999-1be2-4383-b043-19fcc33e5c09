@@ -1,0 +1,33 @@
+# Development requirements
+-r requirements.txt
+
+# Web development tools
+fastapi-code-generator>=0.4.0  # Generate FastAPI code from OpenAPI specs
+fastapi-utils>=0.2.1  # Utilities for FastAPI applications
+starlette-context>=0.3.6  # Context variables for Starlette/FastAPI
+fastapi-pagination>=0.12.4  # Pagination for FastAPI
+
+# UI development tools
+htmx>=0.0.2  # HTMX integration for modern UI without heavy JS
+tailwindcss-cli>=0.1.3  # Tailwind CSS for styling
+jsmin>=3.0.1  # JS minification
+cssmin>=0.2.0  # CSS minification
+
+# Testing and quality tools
+pytest-cov>=4.1.0  # Test coverage
+pytest-asyncio>=0.21.0  # Async testing support
+black>=23.3.0  # Code formatting
+isort>=5.12.0  # Import sorting
+flake8>=6.0.0  # Linting
+mypy>=1.3.0  # Type checking
+locust>=2.15.0  # Load testing
+
+# Documentation
+mkdocs>=1.4.3  # Documentation generator
+mkdocs-material>=9.1.15  # Material theme for MkDocs
+
+# Optional AI components (install as needed)
+# transformers>=4.33.0
+# langchain>=0.0.348
+# sentence-transformers>=2.2.0
+# huggingface-hub>=0.16.0
