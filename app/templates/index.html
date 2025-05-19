@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Skin Tone Color Analyzer</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .color-swatch {
+            width: 50px;
+            height: 50px;
+            display: inline-block;
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-5">
+        <h1 class="mb-4">Skin Tone Color Analyzer</h1>
+        <div class="row">
+            <div class="col-md-6">
+                <h2>Upload Image</h2>
+                <form id="upload-form" enctype="multipart/form-data">
+                    <div class="mb-3">
+                        <input type="file" class="form-control" id="image-upload" name="file" accept="image/*" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Analyze</button>
+                </form>
+            </div>
+            <div class="col-md-6">
+                <h2>Results</h2>
+                <div id="results" class="d-none">
+                    <img id="uploaded-image" class="img-fluid mb-3" alt="Uploaded Image">
+                    <p><strong>Detected Skin Tone:</strong> <span id="skin-tone"></span></p>
+                    <h3>Recommended Colors:</h3>
+                    <div id="color-recommendations"></div>
+                    <h3 class="mt-4">Modify Skin Tone</h3>
+                    <select id="new-skin-tone" class="form-select mb-3">
+                        <option value="Light">Light</option>
+                        <option value="Medium">Medium</option>
+                        <option value="Dark">Dark</option>
+                    </select>
+                    <button id="modify-skin-tone" class="btn btn-secondary">Modify Skin Tone</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const uploadForm = document.getElementById('upload-form');
+        const resultsDiv = document.getElementById('results');
+        const uploadedImage = document.getElementById('uploaded-image');
+        const skinToneSpan = document.getElementById('skin-tone');
+        const colorRecommendations = document.getElementById('color-recommendations');
+        const newSkinToneSelect = document.getElementById('new-skin-tone');
+        const modifySkinToneBtn = document.getElementById('modify-skin-tone');
+
+        let currentImageId = null;
+
+        uploadForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(uploadForm);
+            
+            try {
+                const response = await fetch('/api/image/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Image upload failed');
+                }
+                
+                const result = await response.json();
+                displayResults(result);
+            } catch (error) {
+                console.error('Error:', error);
+                alert('An error occurred while processing the image.');
+            }
+        });
+
+        modifySkinToneBtn.addEventListener('click', async () => {
+            if (!currentImageId) return;
+            
+            const newSkinTone = newSkinToneSelect.value;
+            
+            try {
+                const response = await fetch('/api/image/modify-skin-tone', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        image_id: currentImageId,
+                        new_skin_tone: newSkinTone
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Skin tone modification failed');
+                }
+                
+                const result = await response.json();
+                displayResults(result);
+            } catch (error) {
+                console.error('Error:', error);
+                alert('An error occurred while modifying the skin tone.');
+            }
+        });
+
+        function displayResults(result) {
+            currentImageId = result.image_id;
+            uploadedImage.src = result.modified_image_url || `/static/uploads/${result.image_id}.jpg`;
+            skinToneSpan.textContent = result.original_skin_tone;
+            
+            colorRecommendations.innerHTML = '';
+            result.recommended_colors.forEach(color => {
+                const colorDiv = document.createElement('div');
+                colorDiv.className = 'mb-2';
+                colorDiv.innerHTML = `
+                    <div class="color-swatch" style="background-color: ${color.hex_code};"></div>
+                    <span>${color.color_name} (Confidence: ${(color.confidence * 100).toFixed(1)}%)</span>
+                `;
+                colorRecommendations.appendChild(colorDiv);
+            });
+            
+            resultsDiv.classList.remove('d-none');
+        }
+    </script>
+</body>
+</html>
